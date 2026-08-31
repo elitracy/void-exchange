@@ -15,6 +15,7 @@ func NewFaction(name string) *Faction {
 	return &Faction{
 		CoreEntity: NewCoreEntity(),
 		Name:       name,
+		Resources:  make(map[ResourceType]int),
 	}
 }
 
@@ -68,8 +69,9 @@ func (f *Faction) AddCreditMiner(id EntityId) error {
 	return nil
 }
 
-// can be pos or neg
 func (f *Faction) UpdateResource(r ResourceType, quantity int) error {
 	f.Resources[r] += quantity
+	f.Resources[r] = max(f.Resources[r], 0)
+
 	return nil
 }

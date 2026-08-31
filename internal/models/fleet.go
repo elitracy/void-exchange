@@ -16,7 +16,7 @@ type Drone struct {
 
 func NewDrone(name string, t DroneType) *Drone {
 	return &Drone{
-		CoreEntity: &CoreEntity{},
+		CoreEntity: NewCoreEntity(),
 		Name:       name,
 		Type:       t,
 	}

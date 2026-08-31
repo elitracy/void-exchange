@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestTerritory(t *testing.T) {
+func TestTerritory_Deposits(t *testing.T) {
 	tests := []struct {
 		deposits      []models.ResourceType
 		depositAmount int
@@ -47,5 +47,26 @@ func TestTerritory(t *testing.T) {
 			assert.Equal(t, tt.depositAmount, deposit.Remaining)
 		}
 
+	}
+}
+
+func TestTerritory_UpdateOwner(t *testing.T) {
+	tests := []struct {
+		owner         models.EntityId
+		expectedOwner models.EntityId
+	}{
+		{20, 20},
+		{-1, -1},
+	}
+
+	for _, tt := range tests {
+		em := models.NewEntityManager()
+
+		territory := models.NewTerritory()
+		models.Register(em, territory)
+
+		territory.UpdatedOwner(tt.owner)
+
+		assert.Equal(t, tt.expectedOwner, territory.Owner)
 	}
 }
