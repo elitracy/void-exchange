@@ -21,3 +21,7 @@ func NewDrone(name string, t DroneType) *Drone {
 		Type:       t,
 	}
 }
+
+func (d *Drone) Tick() error {
+	return nil
+}

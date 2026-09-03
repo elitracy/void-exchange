@@ -79,6 +79,7 @@ func NewCreditMiner() *CreditMiner {
 }
 
 func (g *Generator) SetOutputTarget(id EntityId) { g.OutputTarget = id }
+func (g *Generator) Tick() error                 { return nil }
 
 func (f *Factory) SetGenerator(id EntityId) { f.PowerSource = id }
 

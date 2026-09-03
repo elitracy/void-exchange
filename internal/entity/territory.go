@@ -34,3 +34,4 @@ func (t *Territory) UpdatedOwner(id EntityId) error {
 
 	return nil
 }
+func (t *Territory) Tick() error { return nil }

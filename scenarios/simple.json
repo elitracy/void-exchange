@@ -1,0 +1,19 @@
+{
+    "factions": [
+        {
+            "name": "faction_a"
+        }
+    ],
+    "territories": [
+        {
+            "deposits": [
+                {
+                    "type": "resource_mineral",
+                    "quantity": 1
+                }
+            ],
+            "depositMin": 0,
+            "depositMax": 100
+        }
+    ]
+}

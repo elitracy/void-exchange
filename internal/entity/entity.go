@@ -1,10 +1,13 @@
 package entity
 
+import "fmt"
+
 type EntityId int
 
 type Entity interface {
 	Id() EntityId
 	setId(id EntityId)
+	Tick() error
 }
 
 type CoreEntity struct {
@@ -48,4 +51,15 @@ func (em EntityManager) GetEntity(id EntityId) (Entity, bool) {
 
 	return e, ok
 
+}
+
+func (em EntityManager) Tick() error {
+	for id, entity := range em.Entities {
+		err := entity.Tick()
+		if err != nil {
+			return fmt.Errorf("ticking entity (%d): %e", id, err)
+		}
+	}
+
+	return nil
 }

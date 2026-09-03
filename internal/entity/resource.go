@@ -38,3 +38,5 @@ func NewResourceDeposit(t ResourceType, total int) *ResourceDeposit {
 		Remaining:  total,
 	}
 }
+
+func (rd *ResourceDeposit) Tick() error { return nil }

@@ -30,14 +30,10 @@ type LogMessage struct {
 	Message  string
 }
 
-type Tick interface {
-	Tick() int
-}
-
 type logger struct {
 	queue    chan LogMessage
 	filepath string
-	tick     Tick
+	tick     int
 	wg       sync.WaitGroup
 }
 
@@ -57,13 +53,13 @@ func (l *logger) run() {
 		timeTick := fmt.Sprintf("%s%s", colorGrey, msg.Time.Format("15:04:05.000"))
 		lines := strings.SplitSeq(msg.Message, "\n")
 		for line := range lines {
-			log.Printf("%s %d %s[%s] %s %s%s\n", timeTick, l.tick.Tick(), msg.Color, msg.Level, msg.Filename, line, colorReset)
+			log.Printf("%s %d %s[%s] %s %s%s\n", timeTick, l.tick, msg.Color, msg.Level, msg.Filename, line, colorReset)
 		}
 	}
 	l.wg.Done()
 }
 
-func Init(filepath string, tick Tick) {
+func Init(filepath string, tick int) {
 	l := &logger{
 		queue:    make(chan LogMessage, 10),
 		filepath: filepath,
@@ -96,7 +92,7 @@ func (l *logger) log(level, color, format string, args ...any) {
 
 	l.queue <- LogMessage{
 		Time:     time.Now(),
-		Tick:     l.tick.Tick(),
+		Tick:     l.tick,
 		Level:    level,
 		Filename: fileName,
 		Message:  msg,
