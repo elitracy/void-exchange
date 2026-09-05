@@ -1,22 +1,41 @@
 package engine
 
 import (
+	"context"
+	"fmt"
 	"time"
 
-	"github.com/elitracy/space-war-sim/internal/gamestate"
 	"github.com/elitracy/space-war-sim/internal/logging"
 )
 
-func RunGame(gs *gamestate.GameState) error {
-	logging.Init("./logs/debug.log", gs.CurrentTick)
+type GameState interface {
+	Tick() error
+	CurrentTick() int
+}
+
+func RunGame(ctx context.Context, gs GameState, tickInterval time.Duration) error {
+
+	if gs == nil {
+		return fmt.Errorf("nil gamestate")
+	}
+
+	logging.Init("./logs/debug.log", gs.CurrentTick())
 
 	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+		}
 
-		// update
 		if err := gs.Tick(); err != nil {
 			return err
 		}
 
-		time.Sleep(time.Second)
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(tickInterval):
+		}
 	}
 }

@@ -1,6 +1,9 @@
 package entity
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 type EntityId int
 
@@ -23,27 +26,30 @@ func (ce *CoreEntity) setId(id EntityId) { ce.id = id }
 
 type EntityManager struct {
 	currentEntityId EntityId
-	Entities        map[EntityId]Entity
+	Entities        []EntityId
+	entityLookup    map[EntityId]Entity
 }
 
 func NewEntityManager() *EntityManager {
 	return &EntityManager{
 		currentEntityId: 0,
-		Entities:        make(map[EntityId]Entity),
+		entityLookup:    make(map[EntityId]Entity),
 	}
 }
 
 func Register[T Entity](em *EntityManager, e T) T {
 
 	e.setId(em.currentEntityId)
-	em.Entities[e.Id()] = e
+	em.entityLookup[e.Id()] = e
+	em.Entities = append(em.Entities, e.Id())
+
 	em.currentEntityId++
 
 	return e
 }
 
 func (em EntityManager) GetEntity(id EntityId) (Entity, bool) {
-	e, ok := em.Entities[id]
+	e, ok := em.entityLookup[id]
 
 	if !ok {
 		return nil, ok
@@ -53,13 +59,19 @@ func (em EntityManager) GetEntity(id EntityId) (Entity, bool) {
 
 }
 
-func (em EntityManager) Tick() error {
-	for id, entity := range em.Entities {
-		err := entity.Tick()
+func (em *EntityManager) Tick() error {
+	var errs []error
+	for _, id := range em.Entities {
+		e, ok := em.GetEntity(id)
+		if !ok {
+			return fmt.Errorf("invalid entity id %d", id)
+		}
+
+		err := e.Tick()
 		if err != nil {
-			return fmt.Errorf("ticking entity (%d): %e", id, err)
+			errs = append(errs, fmt.Errorf("ticking entity (%d): %w", id, err))
 		}
 	}
 
-	return nil
+	return errors.Join(errs...)
 }

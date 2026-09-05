@@ -1,6 +1,7 @@
 package gamestate
 
 import (
+	"fmt"
 	"math/rand"
 
 	"github.com/elitracy/space-war-sim/internal/entity"
@@ -10,7 +11,7 @@ type GameState struct {
 	EM          *entity.EntityManager
 	Territories []*entity.Territory
 	Factions    []*entity.Faction
-	CurrentTick int
+	currentTick int
 	Rng         *rand.Rand
 }
 
@@ -24,12 +25,15 @@ func NewGameState(seed int64) *GameState {
 func PopulateTerritory(
 	em *entity.EntityManager,
 	t *entity.Territory,
-	types []entity.ResourceType,
+	resourceTypes []entity.ResourceType,
 	min, max int64,
 	rng *rand.Rand,
 ) error {
+	if min > max || min < 0 {
+		return fmt.Errorf("invalid min,max (%d,%d)", min, max)
+	}
 
-	for _, rt := range types {
+	for _, rt := range resourceTypes {
 		amount := rng.Int63n(max-min+1) + min
 		deposit := entity.NewResourceDeposit(rt, int(amount))
 		entity.Register(em, deposit)
@@ -43,6 +47,9 @@ func PopulateTerritory(
 }
 
 func (gs *GameState) Tick() error {
-	gs.CurrentTick += 1
+	gs.currentTick += 1
 	return gs.EM.Tick()
+
 }
+
+func (gs *GameState) CurrentTick() int { return gs.currentTick }

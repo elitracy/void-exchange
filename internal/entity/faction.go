@@ -75,3 +75,5 @@ func (f *Faction) UpdateResource(r ResourceType, quantity int) error {
 
 	return nil
 }
+
+func (f *Faction) Tick() error { return nil }

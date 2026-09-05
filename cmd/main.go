@@ -1,10 +1,12 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/elitracy/space-war-sim/internal/engine"
 	"github.com/elitracy/space-war-sim/internal/gamestate"
@@ -16,6 +18,8 @@ func main() {
 	var scenarioFlag = flag.String("s", "", "the name of the scenario to run")
 
 	flag.Parse()
+
+	gs := gamestate.NewGameState(0)
 
 	if *listScenariosFlag {
 		path := "./scenarios"
@@ -36,8 +40,6 @@ func main() {
 		fmt.Println()
 	}
 
-	gs := gamestate.NewGameState(0)
-
 	if *scenarioFlag != "" {
 		path := fmt.Sprintf("./scenarios/%s.json", *scenarioFlag)
 
@@ -57,7 +59,7 @@ func main() {
 
 	}
 
-	err := engine.RunGame(gs)
+	err := engine.RunGame(context.Background(), gs, time.Second)
 	if err != nil {
 		fmt.Println("Error:", err.Error())
 		return
