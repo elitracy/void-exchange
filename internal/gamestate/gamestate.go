@@ -53,3 +53,4 @@ func (gs *GameState) Tick() error {
 }
 
 func (gs *GameState) CurrentTick() int { return gs.currentTick }
+func (gs *GameState) SetSeed(seed int) { gs.Rng = rand.New(rand.NewSource(int64(seed))) }
