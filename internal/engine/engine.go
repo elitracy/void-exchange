@@ -24,6 +24,7 @@ func RunGame(ctx context.Context, gs GameState, tickInterval time.Duration) erro
 	for {
 		select {
 		case <-ctx.Done():
+			logging.Info("Exiting...")
 			return ctx.Err()
 		default:
 		}
@@ -34,6 +35,7 @@ func RunGame(ctx context.Context, gs GameState, tickInterval time.Duration) erro
 
 		select {
 		case <-ctx.Done():
+			logging.Info("Exiting...")
 			return ctx.Err()
 		case <-time.After(tickInterval):
 		}

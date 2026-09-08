@@ -2,6 +2,7 @@ package gamestate_test
 
 import (
 	"errors"
+	"fmt"
 	"math/rand"
 	"strconv"
 	"testing"
@@ -169,5 +170,65 @@ func TestPopulateTerritory(t *testing.T) {
 			assert.Equal(t, len(tt.resourceTypes), len(terr.ResourceDeposits))
 		}
 
+	}
+}
+
+type droneConf struct {
+	factionIdx entity.EntityId
+	hp         int
+}
+
+func TestResolveTerritoryConflicts(t *testing.T) {
+	tests := []struct {
+		name            string
+		drones          []droneConf
+		ticks           int
+		expectedOwnerId entity.EntityId
+	}{
+		{"uncontested single faction does not change owner", []droneConf{{0, 100}}, 10, 0},
+		{"2 factions - higher hp wins", []droneConf{{0, 100}, {1, 50}}, 5, 0},
+		{"2 factions - mutual elimination (no owner resolution)", []droneConf{{0, 100}, {1, 100}}, 10, -1},
+		{"2 factions - both survive (no owner resolution)", []droneConf{{0, 20}, {1, 20}}, 10, -1},
+		{"5 factions - highest hp wins", []droneConf{
+			{0, 20},
+			{1, 30},
+			{2, 40},
+			{3, 50},
+			{4, 60},
+		}, 10, 4},
+	}
+
+	for _, tt := range tests {
+		gs := gamestate.NewGameState(0)
+		terr := entity.Register(gs.EM, entity.NewTerritory())
+		gs.Territories = append(gs.Territories, terr)
+
+		factions := []*entity.Faction{}
+
+		for range tt.drones {
+			faction := entity.Register(gs.EM, entity.NewFaction("test_faction"))
+			factions = append(factions, faction)
+			gs.Factions = append(gs.Factions, faction)
+			terr.AddFaction(faction.Id())
+		}
+
+		for _, conf := range tt.drones {
+			drone := entity.NewDrone(fmt.Sprintf("test_drone_%d", conf.factionIdx), entity.DroneFighter, conf.hp)
+			entity.Register(gs.EM, drone)
+			assert.Nil(t, factions[conf.factionIdx].AddDrone(drone.Id()))
+		}
+
+		var err error
+		for range tt.ticks {
+			err = gs.ResolveTerritoryConflicts()
+		}
+
+		assert.Nil(t, err)
+		if tt.expectedOwnerId != -1 {
+			assert.Equal(t, factions[tt.expectedOwnerId].Id(), terr.Owner)
+		} else {
+			assert.Equal(t, tt.expectedOwnerId, terr.Owner)
+
+		}
 	}
 }

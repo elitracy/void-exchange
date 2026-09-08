@@ -12,13 +12,15 @@ type Drone struct {
 	*CoreEntity
 	Name string
 	Type DroneType
+	HP   int
 }
 
-func NewDrone(name string, t DroneType) *Drone {
+func NewDrone(name string, dt DroneType, hp int) *Drone {
 	return &Drone{
 		CoreEntity: NewCoreEntity(),
 		Name:       name,
-		Type:       t,
+		Type:       dt,
+		HP:         hp,
 	}
 }
 

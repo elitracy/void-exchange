@@ -48,6 +48,22 @@ func Register[T Entity](em *EntityManager, e T) T {
 	return e
 }
 
+func GetAs[T Entity](em *EntityManager, id EntityId) (T, error) {
+	e, ok := em.GetEntity(id)
+
+	if !ok {
+		return *new(T), ErrEntityNotFound
+	}
+
+	typed, ok := e.(T)
+
+	if !ok { // NOTE: shouldn't ever get hit because a non-Entity can't be passed at compile time to func
+		return *new(T), ErrInvalidEntity
+	}
+
+	return typed, nil
+}
+
 func (em EntityManager) GetEntity(id EntityId) (Entity, bool) {
 	e, ok := em.entityLookup[id]
 

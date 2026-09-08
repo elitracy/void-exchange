@@ -70,3 +70,34 @@ func TestTerritory_UpdateOwner(t *testing.T) {
 		assert.Equal(t, tt.expectedOwner, territory.Owner)
 	}
 }
+
+func TestTerritory_RemoveFaction(t *testing.T) {
+	tests := []struct {
+		name               string
+		factionIds         []entity.EntityId
+		idsToRemove        []entity.EntityId
+		expectedFactionIds []entity.EntityId
+		expectRemoved      bool
+	}{
+		{"remove single id", []entity.EntityId{0, 1, 2}, []entity.EntityId{0}, []entity.EntityId{1, 2}, true},
+		{"remove id with empty list", []entity.EntityId{}, []entity.EntityId{0, 1, 2}, []entity.EntityId{}, false},
+		{"remove multiple ids", []entity.EntityId{0, 1, 2}, []entity.EntityId{0, 1, 2}, []entity.EntityId{}, true},
+		{"remove nonexistant id", []entity.EntityId{0, 1, 2}, []entity.EntityId{100}, []entity.EntityId{0, 1, 2}, false},
+	}
+
+	for _, tt := range tests {
+		territory := entity.NewTerritory()
+
+		for _, id := range tt.factionIds {
+			territory.AddFaction(id)
+		}
+
+		for _, id := range tt.idsToRemove {
+			removed, err := territory.RemoveFaction(id)
+			assert.Nil(t, err)
+			assert.Equal(t, tt.expectRemoved, removed)
+		}
+
+		assert.Equal(t, tt.expectedFactionIds, territory.Factions)
+	}
+}

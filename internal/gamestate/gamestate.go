@@ -48,9 +48,71 @@ func PopulateTerritory(
 
 func (gs *GameState) Tick() error {
 	gs.currentTick += 1
-	return gs.EM.Tick()
-
+	err := gs.EM.Tick()
+	gs.ResolveTerritoryConflicts()
+	return err
 }
 
 func (gs *GameState) CurrentTick() int { return gs.currentTick }
 func (gs *GameState) SetSeed(seed int) { gs.Rng = rand.New(rand.NewSource(int64(seed))) }
+
+func (gs *GameState) ResolveTerritoryConflicts() error {
+	errs := []error{}
+
+	for _, terr := range gs.Territories {
+		if len(terr.Factions) == 1 {
+			terr.Owner = terr.Factions[0]
+			continue
+		}
+
+		if len(terr.Factions) <= 0 {
+			continue
+		}
+
+		for _, faction_id := range terr.Factions {
+
+			faction, err := entity.GetAs[*entity.Faction](gs.EM, faction_id)
+			if err != nil {
+				errs = append(errs, fmt.Errorf("invalid faction (%d): %w", faction_id, err))
+				continue
+			}
+
+			var drones []*entity.Drone
+			for _, drone_id := range faction.Fleet {
+				drone, err := entity.GetAs[*entity.Drone](gs.EM, drone_id)
+				if err != nil {
+					errs = append(errs, fmt.Errorf("invalid drone (%d): %w", drone_id, err))
+					continue
+				}
+
+				drones = append(drones, drone)
+
+				if drone.HP > 0 {
+					drone.HP -= 10
+				}
+
+			}
+
+			survivors := []entity.EntityId{}
+			for _, drone := range drones {
+				if drone.HP > 0 {
+					survivors = append(survivors, drone.Id())
+				}
+			}
+
+			faction.Fleet = survivors
+			if len(faction.Fleet) == 0 {
+				_, err := terr.RemoveFaction(faction.Id())
+				if err != nil {
+					errs = append(errs, err)
+				}
+			}
+		}
+
+		if len(terr.Factions) == 1 {
+			terr.Owner = terr.Factions[0]
+		}
+	}
+
+	return nil
+}

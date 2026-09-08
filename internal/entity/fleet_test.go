@@ -22,7 +22,7 @@ func TestDrone_RegisterTypes(t *testing.T) {
 
 	for _, tt := range tests {
 
-		drone := entity.NewDrone(tt.name, tt.t)
+		drone := entity.NewDrone(tt.name, tt.t, 100)
 		got := entity.Register(em, drone)
 
 		assert.Equal(t, got.Name, tt.name)
