@@ -1,0 +1,54 @@
+package engine_test
+
+import (
+	"context"
+	"errors"
+	"testing"
+	"time"
+
+	"github.com/elitracy/space-war-sim/pkg/engine"
+	"github.com/stretchr/testify/assert"
+)
+
+type mockGameState struct {
+	currentTick int
+	cancel      context.CancelFunc
+}
+
+func (gs mockGameState) CurrentTick() int {
+	return gs.currentTick
+}
+
+func (gs *mockGameState) Tick() error {
+	gs.currentTick++
+	if gs.currentTick >= 1 {
+		gs.cancel()
+	}
+	return nil
+}
+
+type errGameState struct{}
+
+func (gs errGameState) CurrentTick() int {
+	return 0
+}
+
+func (gs *errGameState) Tick() error {
+	return errors.New("big ahhhh error")
+}
+
+func TestRunGame_StopsOnCancel(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	gs := &mockGameState{currentTick: 0, cancel: cancel}
+
+	err := engine.RunGame(ctx, gs, time.Second)
+
+	assert.Equal(t, err, context.Canceled)
+}
+
+func TestRunGame_PropogatesError(t *testing.T) {
+	gs := &errGameState{}
+	err := engine.RunGame(context.Background(), gs, 0)
+
+	assert.EqualError(t, err, "big ahhhh error")
+}

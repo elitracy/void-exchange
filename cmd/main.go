@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/elitracy/space-war-sim/internal/engine"
-	"github.com/elitracy/space-war-sim/internal/gamestate"
-	"github.com/elitracy/space-war-sim/internal/scenario"
+	"github.com/elitracy/space-war-sim/pkg/engine"
+	"github.com/elitracy/space-war-sim/pkg/gamestate"
+	"github.com/elitracy/space-war-sim/pkg/scenario"
 )
 
 func main() {
