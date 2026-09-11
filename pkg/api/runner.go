@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/elitracy/space-war-sim/pkg/engine"
+	"github.com/elitracy/space-war-sim/pkg/logging"
 )
 
 type Runner struct {
@@ -48,16 +49,26 @@ func (r *Runner) Start(appCtx context.Context, tickInterval time.Duration) (chan
 		done <- err
 	}()
 
+	logging.Info("Started run")
+
 	return done, nil
 }
 
 func (r *Runner) Stop() {
 	r.runningMu.Lock()
 	defer r.runningMu.Unlock()
+
 	if r.cancel != nil {
 		r.cancel()
 	}
+	logging.Info("Stopped run...")
 }
 
-func Pause(gs GameState)  { gs.Pause() }
-func Resume(gs GameState) { gs.Resume() }
+func (r *Runner) Pause() {
+	r.gs.Pause()
+	logging.Info("Paused run")
+}
+func (r *Runner) Resume() {
+	r.gs.Resume()
+	logging.Info("Resuming run")
+}

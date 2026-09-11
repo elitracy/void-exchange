@@ -3,11 +3,19 @@ package main
 import (
 	"context"
 	"fmt"
+	"time"
+
+	"github.com/elitracy/space-war-sim/pkg/api"
+	"github.com/elitracy/space-war-sim/pkg/gamestate"
+	"github.com/elitracy/space-war-sim/pkg/logging"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // App struct
 type App struct {
-	ctx context.Context
+	ctx    context.Context
+	gs     *gamestate.GameState
+	runner *api.Runner
 }
 
 // NewApp creates a new App application struct
@@ -25,3 +33,50 @@ func (a *App) startup(ctx context.Context) {
 func (a *App) Greet(name string) string {
 	return fmt.Sprintf("Hello %s, It's show time!", name)
 }
+
+func (a *App) ListScenarios() ([]string, error) {
+	names, err := api.ListScenarios("./scenarios")
+	return names, err
+}
+
+func (a *App) LoadScenario(name string, seed int) error {
+	path := fmt.Sprintf("./scenarios/%s.json", name)
+	gs, err := api.LoadScenario(path, seed)
+
+	a.gs = gs
+	a.runner = api.NewRunner(gs, "./logs/run.log")
+
+	logging.Info("Loaded scenario: %s", name)
+	return err
+}
+
+func (a *App) StartRun(tickMs int) error {
+	if a.runner == nil {
+		return fmt.Errorf("no scenario loaded")
+	}
+
+	done, err := a.runner.Start(a.ctx, time.Duration(tickMs)*time.Millisecond)
+
+	if err != nil {
+		return err
+	}
+
+	go func() {
+		err := <-done
+		runtime.EventsEmit(a.ctx, "run:finished", fmt.Sprint(err))
+	}()
+
+	return err
+}
+
+func (a *App) Pause()  { a.runner.Pause() }
+func (a *App) Resume() { a.runner.Resume() }
+func (a *App) Stop()   { a.runner.Stop() }
+func (a *App) CurrentTick() int {
+	if a.gs == nil {
+		return -1
+	}
+
+	return a.gs.CurrentTick()
+}
+func (a *App) IsPaused() bool { return a.gs.IsPaused() }
