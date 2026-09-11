@@ -1,14 +1,11 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"os"
 	"strings"
-	"time"
 
-	"github.com/elitracy/space-war-sim/pkg/engine"
 	"github.com/elitracy/space-war-sim/pkg/gamestate"
 	"github.com/elitracy/space-war-sim/pkg/scenario"
 )
@@ -59,9 +56,4 @@ func main() {
 
 	}
 
-	err := engine.RunGame(context.Background(), gs, time.Second)
-	if err != nil {
-		fmt.Println("Error:", err.Error())
-		return
-	}
 }

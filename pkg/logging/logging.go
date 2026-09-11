@@ -72,11 +72,17 @@ func Init(filepath string, tick int) {
 }
 
 func Flush() {
+	if _logger == nil {
+		return
+	}
 	close(_logger.queue)
 	_logger.wg.Wait()
 }
 
 func (l *logger) log(level, color, format string, args ...any) {
+	if l == nil {
+		return
+	}
 	_, file, _, ok := runtime.Caller(2)
 	fileName := "UNKNOWN"
 	if ok {

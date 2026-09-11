@@ -3,6 +3,7 @@ package gamestate
 import (
 	"fmt"
 	"math/rand"
+	"sync"
 
 	"github.com/elitracy/space-war-sim/pkg/entity"
 )
@@ -13,6 +14,27 @@ type GameState struct {
 	Factions    []*entity.Faction
 	currentTick int
 	Rng         *rand.Rand
+
+	paused   bool
+	pausedMu sync.Mutex
+}
+
+func (gs *GameState) IsPaused() bool {
+	gs.pausedMu.Lock()
+	defer gs.pausedMu.Unlock()
+	return gs.paused
+}
+
+func (gs *GameState) Pause() {
+	gs.pausedMu.Lock()
+	defer gs.pausedMu.Unlock()
+	gs.paused = true
+}
+
+func (gs *GameState) Resume() {
+	gs.pausedMu.Lock()
+	defer gs.pausedMu.Unlock()
+	gs.paused = false
 }
 
 func NewGameState(seed int64) *GameState {

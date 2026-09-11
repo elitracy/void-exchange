@@ -38,7 +38,6 @@ func TestLoad_JSON(t *testing.T) {
 
 	assert.Nil(t, err)
 
-	assert.Equal(t, 0, cfg.Seed)
 	assert.Equal(t, scenario.FactionConfig{Name: "test_faction"}, cfg.Factions[0])
 	assert.Equal(t, scenario.TerritoryConfig{
 		Deposits: []scenario.DepositConfig{
@@ -52,7 +51,6 @@ func TestLoad_JSON(t *testing.T) {
 }
 func TestBuild(t *testing.T) {
 	cfg := scenario.Config{
-		Seed: 10,
 		Factions: []scenario.FactionConfig{
 			{"test_faction_a"},
 			{"test_faction_b"},
@@ -82,7 +80,7 @@ func TestBuild(t *testing.T) {
 	assert.Equal(t, 2, len(gs.Factions))
 	assert.Equal(t, "test_faction_a", gs.Factions[0].Name)
 	assert.Equal(t, "test_faction_b", gs.Factions[1].Name)
-	assert.Equal(t, rand.New(rand.NewSource(int64(cfg.Seed))), gs.Rng)
+	assert.Equal(t, rand.New(rand.NewSource(0)), gs.Rng)
 	assert.Equal(t, 1, len(gs.Territories[0].ResourceDeposits))
 	assert.Equal(t, 3, len(gs.Territories[1].ResourceDeposits))
 }

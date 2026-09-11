@@ -2,7 +2,6 @@ package engine
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/elitracy/space-war-sim/pkg/logging"
@@ -11,15 +10,12 @@ import (
 type GameState interface {
 	Tick() error
 	CurrentTick() int
+	IsPaused() bool
 }
 
-func RunGame(ctx context.Context, gs GameState, tickInterval time.Duration) error {
+func RunGame(ctx context.Context, tickInterval time.Duration, logPath string, gs GameState) error {
 
-	if gs == nil {
-		return fmt.Errorf("nil gamestate")
-	}
-
-	logging.Init("./logs/debug.log", gs.CurrentTick())
+	logging.Init(logPath, gs.CurrentTick())
 
 	for {
 		select {
@@ -27,6 +23,11 @@ func RunGame(ctx context.Context, gs GameState, tickInterval time.Duration) erro
 			logging.Info("Exiting...")
 			return ctx.Err()
 		default:
+		}
+
+		if gs.IsPaused() {
+			time.Sleep(tickInterval)
+			continue
 		}
 
 		if err := gs.Tick(); err != nil {

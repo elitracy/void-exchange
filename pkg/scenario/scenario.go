@@ -9,7 +9,6 @@ import (
 )
 
 type Config struct {
-	Seed        int               `json:"seed"`
 	Factions    []FactionConfig   `json:"factions"`
 	Territories []TerritoryConfig `json:"territories"`
 }
@@ -36,8 +35,6 @@ func Load(r io.Reader) (Config, error) {
 }
 
 func Build(cfg Config, gs *gamestate.GameState) {
-	gs.SetSeed(cfg.Seed)
-
 	for _, f := range cfg.Factions {
 		faction := entity.NewFaction(f.Name)
 		entity.Register(gs.EM, faction)
