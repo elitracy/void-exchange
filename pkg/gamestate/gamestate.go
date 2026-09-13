@@ -10,13 +10,28 @@ import (
 
 type GameState struct {
 	EM          *entity.EntityManager
-	Territories []*entity.Territory
-	Factions    []*entity.Faction
+	Territories []entity.EntityId
+	Factions    []entity.EntityId
 	currentTick int
 	Rng         *rand.Rand
 
 	paused   bool
 	pausedMu sync.Mutex
+}
+
+func (gs *GameState) Territory(id entity.EntityId) (*entity.Territory, error) {
+	t, err := entity.GetAs[*entity.Territory](gs.EM, id)
+	return t, err
+}
+
+func (gs *GameState) Faction(id entity.EntityId) (*entity.Faction, error) {
+	f, err := entity.GetAs[*entity.Faction](gs.EM, id)
+	return f, err
+}
+
+func (gs *GameState) Deposit(id entity.EntityId) (*entity.ResourceDeposit, error) {
+	d, err := entity.GetAs[*entity.ResourceDeposit](gs.EM, id)
+	return d, err
 }
 
 func (gs *GameState) IsPaused() bool {
@@ -81,7 +96,13 @@ func (gs *GameState) SetSeed(seed int) { gs.Rng = rand.New(rand.NewSource(int64(
 func (gs *GameState) ResolveTerritoryConflicts() error {
 	errs := []error{}
 
-	for _, terr := range gs.Territories {
+	for _, id := range gs.Territories {
+		terr, err := gs.Territory(id)
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+
 		if len(terr.Factions) == 1 {
 			terr.Owner = terr.Factions[0]
 			continue

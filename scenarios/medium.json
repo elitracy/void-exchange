@@ -12,11 +12,17 @@
             "deposits": [
                 {
                     "type": "resource_mineral",
-                    "quantity": 1
-                },
+                    "quantity": 5
+                }
+            ],
+            "depositMin": 0,
+            "depositMax": 100
+        },
+        {
+            "deposits": [
                 {
                     "type": "resource_energy",
-                    "quantity": 2
+                    "quantity": 5
                 }
             ],
             "depositMin": 0,

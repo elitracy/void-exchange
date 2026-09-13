@@ -1,10 +1,11 @@
 package api
 
 import (
-	"github.com/elitracy/space-war-sim/pkg/gamestate"
-	"github.com/elitracy/space-war-sim/pkg/scenario"
 	"os"
 	"strings"
+
+	"github.com/elitracy/space-war-sim/pkg/gamestate"
+	"github.com/elitracy/space-war-sim/pkg/scenario"
 )
 
 type GameState interface {

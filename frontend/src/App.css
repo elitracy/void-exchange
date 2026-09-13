@@ -42,7 +42,7 @@ h3 {
     height: 100%;
 }
 
-.options-pane {
+#options-pane {
     height: 100%;
     padding: 5px;
     display: flex;
@@ -52,7 +52,7 @@ h3 {
     border-right: 1px white solid;
 }
 
-.content-pane {
+#content-pane {
     height: 100%;
     flex: 1;
     display: flex;

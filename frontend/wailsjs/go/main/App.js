@@ -6,6 +6,22 @@ export function CurrentTick() {
   return window['go']['main']['App']['CurrentTick']();
 }
 
+export function GetDeposit(arg1) {
+  return window['go']['main']['App']['GetDeposit'](arg1);
+}
+
+export function GetDeposits(arg1) {
+  return window['go']['main']['App']['GetDeposits'](arg1);
+}
+
+export function GetTerritories() {
+  return window['go']['main']['App']['GetTerritories']();
+}
+
+export function GetTerritory(arg1) {
+  return window['go']['main']['App']['GetTerritory'](arg1);
+}
+
 export function Greet(arg1) {
   return window['go']['main']['App']['Greet'](arg1);
 }

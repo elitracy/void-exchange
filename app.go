@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/elitracy/space-war-sim/pkg/api"
+	"github.com/elitracy/space-war-sim/pkg/entity"
 	"github.com/elitracy/space-war-sim/pkg/gamestate"
 	"github.com/elitracy/space-war-sim/pkg/logging"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
@@ -80,3 +81,88 @@ func (a *App) CurrentTick() int {
 	return a.gs.CurrentTick()
 }
 func (a *App) IsPaused() bool { return a.gs.IsPaused() }
+
+func (a *App) GetTerritories() ([]*api.TerritoryView, error) {
+	if a.gs == nil || a.runner == nil {
+		return nil, fmt.Errorf("no scenario loaded")
+	}
+
+	tViews := []*api.TerritoryView{}
+	for _, id := range a.gs.Territories {
+		t, err := a.gs.Territory(id)
+		if err != nil {
+			return nil, err
+		}
+
+		view, err := api.NewTerritoryView(a.gs.EM, t)
+		if err != nil {
+			return nil, fmt.Errorf("couldn't create territory view (%d): %w", t.Id(), err)
+		}
+
+		tViews = append(tViews, view)
+	}
+
+	return tViews, nil
+}
+
+func (a *App) GetTerritory(id entity.EntityId) (*api.TerritoryView, error) {
+
+	t, err := entity.GetAs[*entity.Territory](a.gs.EM, id)
+	if err != nil {
+		return nil, err
+	}
+
+	view, err := api.NewTerritoryView(a.gs.EM, t)
+	if err != nil {
+		return nil, fmt.Errorf("couldn't create territory view (%d): %w", t.Id(), err)
+	}
+
+	return view, nil
+
+}
+
+func (a *App) GetDeposits(territoryId entity.EntityId) ([]*api.DepositView, error) {
+	if a.gs == nil || a.runner == nil {
+		return nil, fmt.Errorf("no scenario loaded")
+	}
+
+	territory, err := entity.GetAs[*entity.Territory](a.gs.EM, territoryId)
+	if err != nil {
+		return nil, err
+	}
+
+	dViews := []*api.DepositView{}
+	for _, id := range territory.ResourceDeposits {
+		d, err := entity.GetAs[*entity.ResourceDeposit](a.gs.EM, id)
+		if err != nil {
+			return nil, fmt.Errorf("invalid deposit: %w", err)
+		}
+
+		view, err := api.NewDepositView(d)
+		if err != nil {
+			return nil, fmt.Errorf("couldn't create deposit view (%d): %w", d.Id(), err)
+		}
+
+		dViews = append(dViews, view)
+	}
+
+	return dViews, nil
+}
+
+func (a *App) GetDeposit(depositId entity.EntityId) (*api.DepositView, error) {
+	if a.gs == nil || a.runner == nil {
+		return nil, fmt.Errorf("no scenario loaded")
+	}
+
+	deposit, err := a.gs.Deposit(depositId)
+	if err != nil {
+		return nil, err
+	}
+
+	view, err := api.NewDepositView(deposit)
+	if err != nil {
+		return nil, fmt.Errorf("couldn't create deposit view (%d): %w", deposit.Id(), err)
+	}
+
+	return view, nil
+}

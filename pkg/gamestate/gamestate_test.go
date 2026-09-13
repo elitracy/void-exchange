@@ -201,14 +201,14 @@ func TestResolveTerritoryConflicts(t *testing.T) {
 	for _, tt := range tests {
 		gs := gamestate.NewGameState(0)
 		terr := entity.Register(gs.EM, entity.NewTerritory())
-		gs.Territories = append(gs.Territories, terr)
+		gs.Territories = append(gs.Territories, terr.Id())
 
 		factions := []*entity.Faction{}
 
 		for range tt.drones {
 			faction := entity.Register(gs.EM, entity.NewFaction("test_faction"))
 			factions = append(factions, faction)
-			gs.Factions = append(gs.Factions, faction)
+			gs.Factions = append(gs.Factions, faction.Id())
 			terr.AddFaction(faction.Id())
 		}
 

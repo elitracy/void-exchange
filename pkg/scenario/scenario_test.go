@@ -77,10 +77,23 @@ func TestBuild(t *testing.T) {
 	gs := gamestate.NewGameState(0)
 	scenario.Build(cfg, gs)
 
+	faction_a, err := gs.Faction(gs.Factions[0])
+	assert.Nil(t, err)
+	assert.Equal(t, "test_faction_a", faction_a.Name)
+
+	faction_b, err := gs.Faction(gs.Factions[1])
+	assert.Nil(t, err)
+	assert.Equal(t, "test_faction_b", faction_b.Name)
+
 	assert.Equal(t, 2, len(gs.Factions))
-	assert.Equal(t, "test_faction_a", gs.Factions[0].Name)
-	assert.Equal(t, "test_faction_b", gs.Factions[1].Name)
 	assert.Equal(t, rand.New(rand.NewSource(0)), gs.Rng)
-	assert.Equal(t, 1, len(gs.Territories[0].ResourceDeposits))
-	assert.Equal(t, 3, len(gs.Territories[1].ResourceDeposits))
+
+	terr_a, err := gs.Territory(gs.Territories[0])
+	assert.Nil(t, err)
+
+	terr_b, err := gs.Territory(gs.Territories[1])
+	assert.Nil(t, err)
+
+	assert.Equal(t, 1, len(terr_a.ResourceDeposits))
+	assert.Equal(t, 3, len(terr_b.ResourceDeposits))
 }

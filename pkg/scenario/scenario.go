@@ -38,7 +38,7 @@ func Build(cfg Config, gs *gamestate.GameState) {
 	for _, f := range cfg.Factions {
 		faction := entity.NewFaction(f.Name)
 		entity.Register(gs.EM, faction)
-		gs.Factions = append(gs.Factions, faction)
+		gs.Factions = append(gs.Factions, faction.Id())
 	}
 
 	for _, t := range cfg.Territories {
@@ -53,6 +53,6 @@ func Build(cfg Config, gs *gamestate.GameState) {
 			}
 		}
 
-		gs.Territories = append(gs.Territories, territory)
+		gs.Territories = append(gs.Territories, territory.Id())
 	}
 }
