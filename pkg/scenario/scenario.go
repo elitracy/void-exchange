@@ -15,6 +15,11 @@ type Config struct {
 
 type FactionConfig struct {
 	Name string `json:"name"`
+	// StartingResources seeds the faction's OwnedResources so players have
+	// something to spend on drones from tick 0 (Phase 1: Claim/Fight keeps
+	// drone funding simple - a fixed starting stock rather than a full
+	// production economy).
+	StartingResources map[entity.ResourceType]int `json:"startingResources"`
 }
 
 type TerritoryConfig struct {
@@ -39,6 +44,10 @@ func Build(cfg Config, gs *gamestate.GameState) {
 		faction := entity.NewFaction(f.Name)
 		entity.Register(gs.EM, faction)
 		gs.Factions = append(gs.Factions, faction.Id())
+
+		for resourceType, amount := range f.StartingResources {
+			faction.UpdateResource(resourceType, amount)
+		}
 	}
 
 	for _, t := range cfg.Territories {
