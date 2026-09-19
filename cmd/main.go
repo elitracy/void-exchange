@@ -6,8 +6,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/elitracy/space-war-sim/pkg/gamestate"
-	"github.com/elitracy/space-war-sim/pkg/scenario"
+	"github.com/elitracy/void-exchange/pkg/gamestate"
+	"github.com/elitracy/void-exchange/pkg/scenario"
 )
 
 func main() {

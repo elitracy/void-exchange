@@ -3,7 +3,7 @@ package entity_test
 import (
 	"testing"
 
-	"github.com/elitracy/space-war-sim/pkg/entity"
+	"github.com/elitracy/void-exchange/pkg/entity"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -5,7 +5,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/elitracy/space-war-sim/pkg/entity"
+	"github.com/elitracy/void-exchange/pkg/entity"
 )
 
 type TerritoryView struct {

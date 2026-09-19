@@ -1,4 +1,4 @@
-module github.com/elitracy/space-war-sim
+module github.com/elitracy/void-exchange
 
 go 1.26.4
 

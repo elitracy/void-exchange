@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/elitracy/space-war-sim/pkg/engine"
-	"github.com/elitracy/space-war-sim/pkg/logging"
+	"github.com/elitracy/void-exchange/pkg/engine"
+	"github.com/elitracy/void-exchange/pkg/logging"
 )
 
 type Runner struct {

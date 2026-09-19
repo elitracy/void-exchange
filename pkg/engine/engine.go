@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/elitracy/space-war-sim/pkg/logging"
+	"github.com/elitracy/void-exchange/pkg/logging"
 )
 
 type GameState interface {

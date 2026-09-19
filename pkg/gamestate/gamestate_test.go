@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/elitracy/space-war-sim/pkg/entity"
+	"github.com/elitracy/void-exchange/pkg/entity"
 	"github.com/elitracy/space-war-sim/pkg/gamestate"
 	"github.com/stretchr/testify/assert"
 )

@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"sync"
 
-	"github.com/elitracy/space-war-sim/pkg/entity"
+	"github.com/elitracy/void-exchange/pkg/entity"
 )
 
 type GameState struct {

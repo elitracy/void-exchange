@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"io"
 
-	"github.com/elitracy/space-war-sim/pkg/entity"
-	"github.com/elitracy/space-war-sim/pkg/gamestate"
+	"github.com/elitracy/void-exchange/pkg/entity"
+	"github.com/elitracy/void-exchange/pkg/gamestate"
 )
 
 type Config struct {
