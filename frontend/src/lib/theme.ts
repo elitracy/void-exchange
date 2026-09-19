@@ -22,6 +22,30 @@ export function formatResourceLabel(type: string): string {
     return type.replace(/^resource_/, "").toUpperCase()
 }
 
+// Drone activity/type string constants mirror the Go side (entity.DroneActivity
+// / entity.DroneType) exactly, since Wails generates them as plain strings.
+export const DRONE_FIGHTING = "drone_fighting"
+export const DRONE_MINING = "drone_mining"
+export const DRONE_IDLE = "drone_idle"
+
+export const DRONE_TYPE_FIGHTER = "drone_fighter"
+export const DRONE_TYPE_MINER = "drone_miner"
+export const DRONE_TYPE_TRANSPORT = "drone_transport"
+
+export function formatDroneLabel(value: string): string {
+    return value.replace(/^drone_/, "").toUpperCase()
+}
+
+const ACTIVITY_STYLE: Record<string, { text: string; dot: string }> = {
+    [DRONE_FIGHTING]: { text: "text-signal-down", dot: "bg-signal-down" },
+    [DRONE_MINING]: { text: "text-signal-up", dot: "bg-signal-up" },
+    [DRONE_IDLE]: { text: "text-ink-500", dot: "bg-ink-600" },
+}
+
+export function activityAccent(activity: string) {
+    return ACTIVITY_STYLE[activity] ?? { text: "text-ink-500", dot: "bg-ink-600" }
+}
+
 const RESOURCE_PALETTE = [
     "text-violet-glow border-violet-core/40 bg-violet-dim/60",
     "text-signal-up border-signal-up/40 bg-signal-up-dim/60",

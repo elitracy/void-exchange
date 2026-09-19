@@ -2,12 +2,13 @@ import { useState, useMemo, useEffect } from 'react';
 import { CurrentTick, ListScenarios, LoadScenario, Pause, Resume, StartRun } from "../wailsjs/go/main/App";
 import TerritoryTable from './components/TerritoryTable';
 import FactionTable from './components/FactionTable';
+import DroneTable from './components/DroneTable';
 import StatTile from './components/ui/StatTile';
 import { useFactionsQuery, useTerritoriesQuery } from './hooks/useGameData';
 
 const UI_TICK_INTERVAL = 1000 //ms
 
-type View = "territories" | "factions"
+type View = "territories" | "factions" | "drones"
 
 function App() {
     const [scenarios, setScenarios] = useState<string[]>()
@@ -174,7 +175,7 @@ function App() {
                     </div>
 
                     <div className="mb-4 flex gap-1 rounded-lg border border-space-600 bg-space-850/60 p-1 self-start">
-                        {(["territories", "factions"] as const).map(v => (
+                        {(["territories", "factions", "drones"] as const).map(v => (
                             <button
                                 key={v}
                                 onClick={() => setView(v)}
@@ -183,17 +184,15 @@ function App() {
                                         : "text-ink-500 hover:text-ink-200"
                                     }`}
                             >
-                                {v === "territories" ? "Territories" : "Factions"}
+                                {v === "territories" ? "Territories" : v === "factions" ? "Factions" : "Drones"}
                             </button>
                         ))}
                     </div>
 
                     <div className="flex flex-1 flex-col overflow-hidden">
-                        {view === "territories" ? (
-                            <TerritoryTable tick={tick} scenario={currentScenario ?? ""} />
-                        ) : (
-                            <FactionTable tick={tick} scenario={currentScenario ?? ""} />
-                        )}
+                        {view === "territories" && <TerritoryTable tick={tick} scenario={currentScenario ?? ""} />}
+                        {view === "factions" && <FactionTable tick={tick} scenario={currentScenario ?? ""} />}
+                        {view === "drones" && <DroneTable tick={tick} scenario={currentScenario ?? ""} />}
                     </div>
                 </main>
             </div>

@@ -18,6 +18,34 @@ export namespace api {
 	        this.remaining = source["remaining"];
 	    }
 	}
+	export class DroneView {
+	    id: number;
+	    faction_id: number;
+	    name: string;
+	    type: string;
+	    level: number;
+	    hp: number;
+	    attack: number;
+	    activity: string;
+	    target: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new DroneView(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.faction_id = source["faction_id"];
+	        this.name = source["name"];
+	        this.type = source["type"];
+	        this.level = source["level"];
+	        this.hp = source["hp"];
+	        this.attack = source["attack"];
+	        this.activity = source["activity"];
+	        this.target = source["target"];
+	    }
+	}
 	export class FactionView {
 	    id: number;
 	    name: string;

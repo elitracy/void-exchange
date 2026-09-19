@@ -6,12 +6,20 @@ export function CurrentTick() {
   return window['go']['main']['App']['CurrentTick']();
 }
 
+export function DispatchDrones(arg1, arg2, arg3, arg4) {
+  return window['go']['main']['App']['DispatchDrones'](arg1, arg2, arg3, arg4);
+}
+
 export function GetDeposit(arg1) {
   return window['go']['main']['App']['GetDeposit'](arg1);
 }
 
 export function GetDeposits(arg1) {
   return window['go']['main']['App']['GetDeposits'](arg1);
+}
+
+export function GetDrones() {
+  return window['go']['main']['App']['GetDrones']();
 }
 
 export function GetFactions() {
@@ -44,6 +52,10 @@ export function LoadScenario(arg1, arg2) {
 
 export function Pause() {
   return window['go']['main']['App']['Pause']();
+}
+
+export function RecallDrones(arg1, arg2) {
+  return window['go']['main']['App']['RecallDrones'](arg1, arg2);
 }
 
 export function Resume() {
