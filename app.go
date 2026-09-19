@@ -166,3 +166,26 @@ func (a *App) GetDeposit(depositId entity.EntityId) (*api.DepositView, error) {
 
 	return view, nil
 }
+
+func (a *App) GetFactions() ([]*api.FactionView, error) {
+	if a.gs == nil || a.runner == nil {
+		return nil, fmt.Errorf("no scenario loaded")
+	}
+
+	fViews := []*api.FactionView{}
+	for _, id := range a.gs.Factions {
+		f, err := a.gs.Faction(id)
+		if err != nil {
+			return nil, err
+		}
+
+		view, err := api.NewFactionView(f)
+		if err != nil {
+			return nil, fmt.Errorf("couldn't create faction view (%d): %w", f.Id(), err)
+		}
+
+		fViews = append(fViews, view)
+	}
+
+	return fViews, nil
+}

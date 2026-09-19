@@ -14,6 +14,10 @@ export function GetDeposits(arg1) {
   return window['go']['main']['App']['GetDeposits'](arg1);
 }
 
+export function GetFactions() {
+  return window['go']['main']['App']['GetFactions']();
+}
+
 export function GetTerritories() {
   return window['go']['main']['App']['GetTerritories']();
 }

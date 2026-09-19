@@ -13,6 +13,10 @@
                 {
                     "type": "resource_mineral",
                     "quantity": 5
+                },
+                {
+                    "type": "resource_energy",
+                    "quantity": 3
                 }
             ],
             "depositMin": 0,

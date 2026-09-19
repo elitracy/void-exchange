@@ -18,6 +18,26 @@ export namespace api {
 	        this.remaining = source["remaining"];
 	    }
 	}
+	export class FactionView {
+	    id: number;
+	    name: string;
+	    territories: number[];
+	    drones: number[];
+	    resources: Record<string, number>;
+	
+	    static createFrom(source: any = {}) {
+	        return new FactionView(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.name = source["name"];
+	        this.territories = source["territories"];
+	        this.drones = source["drones"];
+	        this.resources = source["resources"];
+	    }
+	}
 	export class TerritoryView {
 	    id: number;
 	    owner: number;

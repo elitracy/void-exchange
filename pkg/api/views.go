@@ -23,6 +23,14 @@ type DepositView struct {
 	Remaining int                 `json:"remaining"`
 }
 
+type FactionView struct {
+	ID          entity.EntityId             `json:"id"`
+	Name        string                      `json:"name"`
+	Territories []entity.EntityId           `json:"territories"`
+	Drones      []entity.EntityId           `json:"drones"`
+	Resources   map[entity.ResourceType]int `json:"resources"`
+}
+
 func NewTerritoryView(em *entity.EntityManager, t *entity.Territory) (*TerritoryView, error) {
 
 	errs := []error{}
@@ -63,4 +71,15 @@ func NewDepositView(d *entity.ResourceDeposit) (*DepositView, error) {
 		Total:     d.Total,
 		Remaining: d.Remaining,
 	}, nil
+}
+
+func NewFactionView(f *entity.Faction) (*FactionView, error) {
+	return &FactionView{
+		ID:          f.Id(),
+		Name:        f.Name,
+		Territories: f.Territories,
+		Drones:      f.Fleet,
+		Resources:   f.OwnedResources,
+	}, nil
+
 }

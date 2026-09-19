@@ -9,6 +9,8 @@ export function GetDeposit(arg1:entity.EntityId):Promise<api.DepositView>;
 
 export function GetDeposits(arg1:entity.EntityId):Promise<Array<api.DepositView>>;
 
+export function GetFactions():Promise<Array<api.FactionView>>;
+
 export function GetTerritories():Promise<Array<api.TerritoryView>>;
 
 export function GetTerritory(arg1:entity.EntityId):Promise<api.TerritoryView>;
