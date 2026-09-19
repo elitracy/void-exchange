@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/elitracy/space-war-sim/pkg/logging"
+	"github.com/elitracy/void-exchange/pkg/logging"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

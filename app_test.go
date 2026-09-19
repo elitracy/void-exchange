@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/elitracy/space-war-sim/pkg/entity"
+	"github.com/elitracy/void-exchange/pkg/entity"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

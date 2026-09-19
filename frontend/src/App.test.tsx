@@ -25,6 +25,10 @@ vi.mock('../wailsjs/go/main/App', () => ({
     GetTerritories: vi.fn(),
 }))
 
+vi.mock('../wailsjs/runtime/runtime', () => ({
+    EventsOn: vi.fn(() => () => {}),
+}))
+
 const mocked = {
     CurrentTick: vi.mocked(CurrentTick),
     ListScenarios: vi.mocked(ListScenarios),
@@ -78,7 +82,7 @@ describe('App', () => {
 
         await waitFor(() => expect(mocked.LoadScenario).toHaveBeenCalledWith('simple', 0))
         expect(screen.getByRole('button', { name: 'Start' })).toBeEnabled()
-        expect(screen.getByText('paused')).toBeInTheDocument()
+        expect(screen.getByText('idle')).toBeInTheDocument()
     })
 
     it('starting a run flips status to running and disables Start while enabling Pause', async () => {
