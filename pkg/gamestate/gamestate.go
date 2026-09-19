@@ -9,9 +9,6 @@ import (
 	"github.com/elitracy/void-exchange/pkg/entity"
 )
 
-// MiningRatePerDrone is how many units of a resource type one mining drone
-// extracts from a territory's deposits per tick. Flat for now; will likely
-// vary by drone level/type later.
 const MiningRatePerDrone = 5
 
 type GameState struct {
@@ -105,12 +102,6 @@ func (gs *GameState) Tick() error {
 func (gs *GameState) CurrentTick() int { return gs.currentTick }
 func (gs *GameState) SetSeed(seed int) { gs.Rng = rand.New(rand.NewSource(int64(seed))) }
 
-// DispatchDrones commits a set of a faction's idle drones to a territory for
-// either DroneFighting (contest an unclaimed/enemy territory, or reinforce
-// one already owned) or DroneMining (extract resources from a territory the
-// faction already owns). Dispatch is instant: no travel time. Validation
-// happens for every drone before any drone is actually committed, so a bad
-// id in the batch leaves the whole dispatch untouched.
 func (gs *GameState) DispatchDrones(factionId, territoryId entity.EntityId, droneIds []entity.EntityId, activity entity.DroneActivity) error {
 	if len(droneIds) == 0 {
 		return ErrNoDronesSpecified
@@ -182,10 +173,6 @@ func (gs *GameState) DispatchDrones(factionId, territoryId entity.EntityId, dron
 	return nil
 }
 
-// RecallDrones sends committed drones back to idle before their dispatch
-// resolves. If recalling a drone leaves its faction with no remaining
-// fighting drones at a contested territory, the faction is dropped from
-// that territory's contestant list.
 func (gs *GameState) RecallDrones(factionId entity.EntityId, droneIds []entity.EntityId) error {
 	if len(droneIds) == 0 {
 		return ErrNoDronesSpecified
@@ -230,8 +217,6 @@ func (gs *GameState) RecallDrones(factionId entity.EntityId, droneIds []entity.E
 	return nil
 }
 
-// pruneFactionPresence drops a faction from a territory's contestant list
-// once it has no drones left actively fighting there.
 func (gs *GameState) pruneFactionPresence(factionId, territoryId entity.EntityId) {
 	terr, err := gs.Territory(territoryId)
 	if err != nil {
@@ -256,22 +241,14 @@ func (gs *GameState) pruneFactionPresence(factionId, territoryId entity.EntityId
 	terr.RemoveFaction(factionId)
 }
 
-// combatant is the per-faction tally used while resolving a single
-// territory's conflict for one tick.
 type combatant struct {
 	factionId   entity.EntityId
 	drones      []*entity.Drone
 	totalAttack int
 }
 
-// ResolveTerritoryConflicts applies one tick of the even-split combat model:
-// for every territory with 2+ contesting factions, each faction's total
-// attack (summed across its drones actually dispatched to fight there) is
-// dealt as damage to the opposing side(s), split evenly across that side's
-// drones. Destroyed drones are removed from their faction's fleet; a
-// faction with no fighting drones left at a territory is dropped from the
-// contest. A territory left with exactly one contesting faction is awarded
-// to it.
+// Each faction's total attack is dealt as damage split evenly across the
+// opposing side's drones.
 func (gs *GameState) ResolveTerritoryConflicts() error {
 	errs := []error{}
 
@@ -378,9 +355,6 @@ func (gs *GameState) ResolveTerritoryConflicts() error {
 	return errors.Join(errs...)
 }
 
-// ResolveMining runs one tick of resource extraction: every territory's
-// owning faction pulls MiningRatePerDrone units of each deposit's resource
-// type per mining drone it currently has dispatched to that territory.
 func (gs *GameState) ResolveMining() error {
 	errs := []error{}
 

@@ -220,9 +220,7 @@ func (a *App) GetDrones() ([]*api.DroneView, error) {
 	return dViews, nil
 }
 
-// DispatchDrones commits a faction's idle drones to a territory. activity
-// must be "drone_fighting" (contest/reinforce) or "drone_mining" (requires
-// the faction already own the territory).
+// DispatchDrones: drone_mining requires the faction already own the territory.
 func (a *App) DispatchDrones(factionId entity.EntityId, territoryId entity.EntityId, droneIds []entity.EntityId, activity entity.DroneActivity) error {
 	if a.gs == nil || a.runner == nil {
 		return fmt.Errorf("no scenario loaded")
@@ -231,7 +229,6 @@ func (a *App) DispatchDrones(factionId entity.EntityId, territoryId entity.Entit
 	return a.gs.DispatchDrones(factionId, territoryId, droneIds, activity)
 }
 
-// RecallDrones instantly returns committed drones to idle.
 func (a *App) RecallDrones(factionId entity.EntityId, droneIds []entity.EntityId) error {
 	if a.gs == nil || a.runner == nil {
 		return fmt.Errorf("no scenario loaded")

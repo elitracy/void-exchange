@@ -39,9 +39,6 @@ func (f *Faction) AddDrone(id EntityId) error {
 	return nil
 }
 
-// RemoveDrone drops a single drone from the faction's fleet, e.g. when it is
-// destroyed in combat. Unlike the old conflict resolution code, this never
-// touches the rest of the fleet.
 func (f *Faction) RemoveDrone(id EntityId) (removed bool, err error) {
 	if id == -1 {
 		return false, ErrInvalidEntityId
@@ -61,8 +58,6 @@ func (f *Faction) RemoveDrone(id EntityId) (removed bool, err error) {
 	return removed, nil
 }
 
-// HasDrone reports whether the given drone id belongs to this faction's
-// fleet, used to validate dispatch/recall commands.
 func (f *Faction) HasDrone(id EntityId) bool {
 	for _, droneId := range f.Fleet {
 		if droneId == id {
