@@ -51,15 +51,29 @@ func TestRunGame_StopsOnCancel(t *testing.T) {
 	gs := &mockGameState{currentTick: 0, cancel: cancel}
 	logPath := filepath.Join(t.TempDir(), "test.log")
 
-	err := engine.RunGame(ctx, time.Second, logPath, gs)
+	err := engine.RunGame(ctx, time.Second, logPath, gs, nil)
 	assert.Equal(t, err, context.Canceled)
+}
+
+func TestRunGame_CallsOnTickForEveryTick(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	gs := &mockGameState{currentTick: 0, cancel: cancel}
+	logPath := filepath.Join(t.TempDir(), "test.log")
+
+	var seen []int
+	err := engine.RunGame(ctx, time.Millisecond, logPath, gs, func(tick int) {
+		seen = append(seen, tick)
+	})
+
+	assert.Equal(t, err, context.Canceled)
+	assert.Equal(t, []int{1}, seen)
 }
 
 func TestRunGame_PropogatesError(t *testing.T) {
 	gs := &errGameState{}
 	ctx := context.Background()
 	logPath := filepath.Join(t.TempDir(), "test.log")
-	err := engine.RunGame(ctx, 0, logPath, gs)
+	err := engine.RunGame(ctx, 0, logPath, gs, nil)
 
 	assert.EqualError(t, err, "big ahhhh error")
 }

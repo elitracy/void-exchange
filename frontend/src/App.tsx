@@ -1,12 +1,16 @@
 import { useState, useMemo, useEffect } from 'react';
-import { CurrentTick, ListScenarios, LoadScenario, Pause, Resume, StartRun } from "../wailsjs/go/main/App";
+import { ListScenarios, LoadScenario, Pause, Resume, StartRun } from "../wailsjs/go/main/App";
+import { EventsOn } from "../wailsjs/runtime/runtime";
 import TerritoryTable from './components/TerritoryTable';
 import FactionTable from './components/FactionTable';
 import DroneTable from './components/DroneTable';
 import StatTile from './components/ui/StatTile';
 import { useFactionsQuery, useTerritoriesQuery } from './hooks/useGameData';
+import { formatMissionClock } from './lib/time';
 
-const UI_TICK_INTERVAL = 1000 //ms
+const SIM_TICK_MS = 100
+const UI_REFRESH_MS = 1000
+const TICKS_PER_REFRESH = Math.max(1, Math.round(UI_REFRESH_MS / SIM_TICK_MS))
 
 type View = "territories" | "factions" | "drones"
 
@@ -15,10 +19,14 @@ function App() {
     const [currentScenario, setCurrentScenario] = useState<string>()
     const [tick, setTick] = useState(0)
     const [running, setRunning] = useState(false)
+    const [started, setStarted] = useState(false)
     const [view, setView] = useState<View>("territories")
+    const [showTickDebug, setShowTickDebug] = useState(false)
 
-    const { data: territories } = useTerritoriesQuery(tick, currentScenario ?? "")
-    const { data: factions } = useFactionsQuery(tick, currentScenario ?? "")
+    const queryTick = Math.floor(tick / TICKS_PER_REFRESH)
+
+    const { data: territories } = useTerritoriesQuery(queryTick, currentScenario ?? "")
+    const { data: factions } = useFactionsQuery(queryTick, currentScenario ?? "")
 
     const claimedTerritories = useMemo(
         () => (territories ?? []).filter(t => t.owner >= 0).length,
@@ -28,6 +36,7 @@ function App() {
     async function startRun() {
         await StartRun(100)
         setRunning(true)
+        setStarted(true)
     }
 
     async function pauseRun() {
@@ -44,6 +53,7 @@ function App() {
         await LoadScenario(scenario, 0)
         setCurrentScenario(scenario)
         setRunning(false)
+        setStarted(false)
         setTick(0)
     }
 
@@ -57,14 +67,20 @@ function App() {
     useEffect(() => {
         if (!running) return
 
-        const id = setInterval(async () => {
-            setTick(await CurrentTick())
-        }, UI_TICK_INTERVAL)
-
-        return () => clearInterval(id)
+        return EventsOn("tick", (t: number) => {
+            setTick(t)
+        })
     }, [running])
 
-    const status = !currentScenario ? "idle" : running ? "running" : "paused"
+    useEffect(() => {
+        function onKeyDown(e: KeyboardEvent) {
+            if (e.key === "`") setShowTickDebug(v => !v)
+        }
+        window.addEventListener("keydown", onKeyDown)
+        return () => window.removeEventListener("keydown", onKeyDown)
+    }, [])
+
+    const status = !currentScenario ? "idle" : running ? "running" : started ? "paused" : "idle"
     const statusStyles: Record<string, string> = {
         idle: "bg-space-600 text-ink-500",
         running: "bg-signal-up-dim text-signal-up",
@@ -140,7 +156,7 @@ function App() {
                 <main className="flex flex-1 flex-col overflow-hidden p-6">
                     <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
                         <div className="flex flex-wrap gap-3">
-                            <StatTile label="Tick" value={tick} accent="violet" />
+                            <StatTile label="Mission Time" value={formatMissionClock(tick)} accent="violet" />
                             <StatTile label="Factions" value={factions?.length ?? 0} accent="neutral" />
                             <StatTile
                                 label="Territories Claimed"
@@ -151,21 +167,21 @@ function App() {
 
                         <div className="flex gap-2">
                             <button
-                                disabled={!currentScenario || running}
+                                disabled={!currentScenario || started}
                                 onClick={() => startRun()}
                                 className="rounded-lg bg-violet-core px-4 py-2 text-sm font-bold uppercase tracking-wide text-white shadow-glow-sm transition-opacity enabled:hover:bg-violet-bright disabled:cursor-not-allowed disabled:opacity-30"
                             >
                                 Start
                             </button>
                             <button
-                                disabled={!running}
+                                disabled={!started || running}
                                 onClick={() => resumeRun()}
                                 className="rounded-lg border border-space-600 bg-space-800 px-4 py-2 text-sm font-bold uppercase tracking-wide text-ink-200 transition-colors enabled:hover:border-signal-up enabled:hover:text-signal-up disabled:cursor-not-allowed disabled:opacity-30"
                             >
                                 Resume
                             </button>
                             <button
-                                disabled={!running}
+                                disabled={!started || !running}
                                 onClick={() => pauseRun()}
                                 className="rounded-lg border border-space-600 bg-space-800 px-4 py-2 text-sm font-bold uppercase tracking-wide text-ink-200 transition-colors enabled:hover:border-signal-warn enabled:hover:text-signal-warn disabled:cursor-not-allowed disabled:opacity-30"
                             >
@@ -190,12 +206,18 @@ function App() {
                     </div>
 
                     <div className="flex flex-1 flex-col overflow-hidden">
-                        {view === "territories" && <TerritoryTable tick={tick} scenario={currentScenario ?? ""} />}
-                        {view === "factions" && <FactionTable tick={tick} scenario={currentScenario ?? ""} />}
-                        {view === "drones" && <DroneTable tick={tick} scenario={currentScenario ?? ""} />}
+                        {view === "territories" && <TerritoryTable tick={queryTick} scenario={currentScenario ?? ""} />}
+                        {view === "factions" && <FactionTable tick={queryTick} scenario={currentScenario ?? ""} />}
+                        {view === "drones" && <DroneTable tick={queryTick} scenario={currentScenario ?? ""} />}
                     </div>
                 </main>
             </div>
+
+            {showTickDebug && (
+                <div className="fixed bottom-3 right-3 rounded-md border border-space-600 bg-space-900/90 px-2 py-1 font-mono text-[0.65rem] text-ink-500 shadow-glow-sm backdrop-blur">
+                    tick {tick}
+                </div>
+            )}
         </div>
     )
 }

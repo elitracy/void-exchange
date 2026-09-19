@@ -27,7 +27,7 @@ func NewRunner(gs GameState, logPath string) *Runner {
 	}
 }
 
-func (r *Runner) Start(appCtx context.Context, tickInterval time.Duration) (chan error, error) {
+func (r *Runner) Start(appCtx context.Context, tickInterval time.Duration, onTick func(tick int)) (chan error, error) {
 	r.runningMu.Lock()
 	if r.running {
 		r.runningMu.Unlock()
@@ -42,7 +42,7 @@ func (r *Runner) Start(appCtx context.Context, tickInterval time.Duration) (chan
 	r.runningMu.Unlock()
 
 	go func() {
-		err := engine.RunGame(simCtx, tickInterval, r.logPath, r.gs)
+		err := engine.RunGame(simCtx, tickInterval, r.logPath, r.gs, onTick)
 		r.runningMu.Lock()
 		r.running = false
 		r.runningMu.Unlock()

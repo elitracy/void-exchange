@@ -15,7 +15,7 @@ func TestStartStop(t *testing.T) {
 	gs := newMockGameState()
 	runner := api.NewRunner(gs, logPath)
 
-	done, err := runner.Start(context.Background(), time.Millisecond)
+	done, err := runner.Start(context.Background(), time.Millisecond, nil)
 	assert.Nil(t, err)
 
 	for range 10 {
@@ -32,7 +32,7 @@ func TestPauseResume(t *testing.T) {
 	gs := newMockGameState()
 	runner := api.NewRunner(gs, logPath)
 
-	done, err := runner.Start(context.Background(), time.Millisecond)
+	done, err := runner.Start(context.Background(), time.Millisecond, nil)
 	assert.Nil(t, err)
 
 	waitForTick(t, gs)

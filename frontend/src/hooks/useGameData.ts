@@ -1,13 +1,12 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query"
 import { GetDrones, GetFactions, GetTerritories } from "../../wailsjs/go/main/App"
 
-// Shared query keys so TerritoryTable, FactionTable, and DroneTable dedupe
-// their network calls through react-query's cache instead of double-fetching.
 export function useFactionsQuery(tick: number, scenario: string) {
     return useQuery({
         queryKey: ["factions", scenario, tick],
         queryFn: GetFactions,
         enabled: !!scenario,
+        placeholderData: keepPreviousData,
     })
 }
 
@@ -16,6 +15,7 @@ export function useTerritoriesQuery(tick: number, scenario: string) {
         queryKey: ["territories", scenario, tick],
         queryFn: GetTerritories,
         enabled: !!scenario,
+        placeholderData: keepPreviousData,
     })
 }
 
@@ -24,6 +24,7 @@ export function useDronesQuery(tick: number, scenario: string) {
         queryKey: ["drones", scenario, tick],
         queryFn: GetDrones,
         enabled: !!scenario,
+        placeholderData: keepPreviousData,
     })
 }
 
