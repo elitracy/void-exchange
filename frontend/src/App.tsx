@@ -80,11 +80,11 @@ function App() {
             <header className="flex items-center justify-between border-b border-space-600 bg-space-900/80 px-6 py-3 backdrop-blur">
                 <div className="flex items-center gap-3">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-core/20 shadow-glow-sm">
-                        <span className="text-sm font-black text-violet-glow">SW</span>
+                        <span className="text-sm font-black text-violet-glow">VE</span>
                     </div>
                     <div>
                         <h1 className="text-sm font-black uppercase tracking-[0.2em] text-ink-100">
-                            Space War Sim
+                            Void Exchange
                         </h1>
                         <p className="text-[0.65rem] uppercase tracking-widest text-ink-500">
                             Territory Control Terminal
