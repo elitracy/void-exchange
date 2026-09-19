@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/elitracy/void-exchange/pkg/entity"
-	"github.com/elitracy/space-war-sim/pkg/gamestate"
+	"github.com/elitracy/void-exchange/pkg/gamestate"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -175,9 +175,16 @@ func TestPopulateTerritory(t *testing.T) {
 
 type droneConf struct {
 	factionIdx entity.EntityId
-	hp         int
+	hp, attack int
 }
 
+// TestResolveTerritoryConflicts exercises the even-split combat model:
+// each tick, every present faction's total attack (summed across its
+// drones actually dispatched to fight at this territory) is split evenly
+// as damage across the opposing side's drones. Drones here are wired up
+// directly (HP/Attack/Activity/Target set by hand) rather than through
+// DispatchDrones, so each case can pin down exact combat stats regardless
+// of the level-derived defaults NewDrone would otherwise apply.
 func TestResolveTerritoryConflicts(t *testing.T) {
 	tests := []struct {
 		name            string
@@ -185,16 +192,16 @@ func TestResolveTerritoryConflicts(t *testing.T) {
 		ticks           int
 		expectedOwnerId entity.EntityId
 	}{
-		{"uncontested single faction does not change owner", []droneConf{{0, 100}}, 10, 0},
-		{"2 factions - higher hp wins", []droneConf{{0, 100}, {1, 50}}, 5, 0},
-		{"2 factions - mutual elimination (no owner resolution)", []droneConf{{0, 100}, {1, 100}}, 10, -1},
-		{"2 factions - both survive (no owner resolution)", []droneConf{{0, 20}, {1, 20}}, 10, -1},
-		{"5 factions - highest hp wins", []droneConf{
-			{0, 20},
-			{1, 30},
-			{2, 40},
-			{3, 50},
-			{4, 60},
+		{"uncontested single faction does not change owner", []droneConf{{0, 100, 10}}, 10, 0},
+		{"2 factions - even split, sturdier side wins", []droneConf{{0, 100, 20}, {1, 50, 10}}, 5, 0},
+		{"2 factions - mutual elimination (no owner resolution)", []droneConf{{0, 100, 50}, {1, 100, 50}}, 10, -1},
+		{"2 factions - both survive (no owner resolution)", []droneConf{{0, 100, 5}, {1, 100, 5}}, 10, -1},
+		{"5 factions - even split free-for-all, highest hp wins", []droneConf{
+			{0, 20, 10},
+			{1, 30, 10},
+			{2, 40, 10},
+			{3, 50, 10},
+			{4, 60, 10},
 		}, 10, 4},
 	}
 
@@ -213,7 +220,11 @@ func TestResolveTerritoryConflicts(t *testing.T) {
 		}
 
 		for _, conf := range tt.drones {
-			drone := entity.NewDrone(fmt.Sprintf("test_drone_%d", conf.factionIdx), entity.DroneFighter, conf.hp)
+			drone := entity.NewDrone(fmt.Sprintf("test_drone_%d", conf.factionIdx), entity.DroneFighter, 1)
+			drone.HP = conf.hp
+			drone.Attack = conf.attack
+			drone.Activity = entity.DroneFighting
+			drone.Target = terr.Id()
 			entity.Register(gs.EM, drone)
 			assert.Nil(t, factions[conf.factionIdx].AddDrone(drone.Id()))
 		}
@@ -231,4 +242,123 @@ func TestResolveTerritoryConflicts(t *testing.T) {
 
 		}
 	}
+}
+
+func setupDispatchGame(t *testing.T) (gs *gamestate.GameState, faction *entity.Faction, enemyFaction *entity.Faction, terr *entity.Territory, fighter, miner *entity.Drone) {
+	t.Helper()
+
+	gs = gamestate.NewGameState(0)
+
+	faction = entity.Register(gs.EM, entity.NewFaction("faction_a"))
+	gs.Factions = append(gs.Factions, faction.Id())
+
+	enemyFaction = entity.Register(gs.EM, entity.NewFaction("faction_b"))
+	gs.Factions = append(gs.Factions, enemyFaction.Id())
+
+	terr = entity.Register(gs.EM, entity.NewTerritory())
+	gs.Territories = append(gs.Territories, terr.Id())
+
+	fighter = entity.Register(gs.EM, entity.NewDrone("fighter", entity.DroneFighter, 1))
+	assert.Nil(t, faction.AddDrone(fighter.Id()))
+
+	miner = entity.Register(gs.EM, entity.NewDrone("miner", entity.DroneMiner, 1))
+	assert.Nil(t, faction.AddDrone(miner.Id()))
+
+	return gs, faction, enemyFaction, terr, fighter, miner
+}
+
+func TestDispatchDrones_Fighting(t *testing.T) {
+	gs, faction, _, terr, fighter, _ := setupDispatchGame(t)
+
+	err := gs.DispatchDrones(faction.Id(), terr.Id(), []entity.EntityId{fighter.Id()}, entity.DroneFighting)
+	assert.Nil(t, err)
+
+	got, err := gs.Drone(fighter.Id())
+	assert.Nil(t, err)
+	assert.Equal(t, entity.DroneFighting, got.Activity)
+	assert.Equal(t, terr.Id(), got.Target)
+	assert.Contains(t, terr.Factions, faction.Id())
+}
+
+func TestDispatchDrones_MiningRequiresOwnership(t *testing.T) {
+	gs, faction, _, terr, _, miner := setupDispatchGame(t)
+
+	err := gs.DispatchDrones(faction.Id(), terr.Id(), []entity.EntityId{miner.Id()}, entity.DroneMining)
+	assert.ErrorIs(t, err, gamestate.ErrTerritoryNotOwned)
+
+	terr.Owner = faction.Id()
+	err = gs.DispatchDrones(faction.Id(), terr.Id(), []entity.EntityId{miner.Id()}, entity.DroneMining)
+	assert.Nil(t, err)
+
+	got, err := gs.Drone(miner.Id())
+	assert.Nil(t, err)
+	assert.Equal(t, entity.DroneMining, got.Activity)
+	assert.Equal(t, terr.Id(), got.Target)
+}
+
+func TestDispatchDrones_WrongTypeRejected(t *testing.T) {
+	gs, faction, _, terr, fighter, _ := setupDispatchGame(t)
+	terr.Owner = faction.Id()
+
+	err := gs.DispatchDrones(faction.Id(), terr.Id(), []entity.EntityId{fighter.Id()}, entity.DroneMining)
+	assert.ErrorIs(t, err, gamestate.ErrWrongDroneType)
+}
+
+func TestDispatchDrones_NotIdleRejected(t *testing.T) {
+	gs, faction, _, terr, fighter, _ := setupDispatchGame(t)
+
+	assert.Nil(t, gs.DispatchDrones(faction.Id(), terr.Id(), []entity.EntityId{fighter.Id()}, entity.DroneFighting))
+	err := gs.DispatchDrones(faction.Id(), terr.Id(), []entity.EntityId{fighter.Id()}, entity.DroneFighting)
+	assert.ErrorIs(t, err, gamestate.ErrDroneNotIdle)
+}
+
+func TestDispatchDrones_NotOwnedRejected(t *testing.T) {
+	gs, _, enemyFaction, terr, fighter, _ := setupDispatchGame(t)
+
+	err := gs.DispatchDrones(enemyFaction.Id(), terr.Id(), []entity.EntityId{fighter.Id()}, entity.DroneFighting)
+	assert.ErrorIs(t, err, gamestate.ErrDroneNotOwned)
+}
+
+func TestRecallDrones(t *testing.T) {
+	gs, faction, _, terr, fighter, _ := setupDispatchGame(t)
+
+	assert.Nil(t, gs.DispatchDrones(faction.Id(), terr.Id(), []entity.EntityId{fighter.Id()}, entity.DroneFighting))
+	assert.Contains(t, terr.Factions, faction.Id())
+
+	assert.Nil(t, gs.RecallDrones(faction.Id(), []entity.EntityId{fighter.Id()}))
+
+	got, err := gs.Drone(fighter.Id())
+	assert.Nil(t, err)
+	assert.Equal(t, entity.DroneIdle, got.Activity)
+	assert.Equal(t, entity.EntityId(-1), got.Target)
+	assert.NotContains(t, terr.Factions, faction.Id())
+}
+
+func TestRecallDrones_NotCommittedRejected(t *testing.T) {
+	gs, faction, _, _, fighter, _ := setupDispatchGame(t)
+
+	err := gs.RecallDrones(faction.Id(), []entity.EntityId{fighter.Id()})
+	assert.ErrorIs(t, err, gamestate.ErrDroneNotCommitted)
+}
+
+func TestResolveMining(t *testing.T) {
+	gs, faction, _, terr, _, miner := setupDispatchGame(t)
+	terr.Owner = faction.Id()
+
+	// Total is deliberately not a multiple of MiningRatePerDrone so the
+	// second tick has to clamp extraction to whatever remains.
+	total := gamestate.MiningRatePerDrone + 3
+	deposit := entity.Register(gs.EM, entity.NewResourceDeposit(entity.ResourceMineral, total))
+	assert.Nil(t, terr.AddDeposit(deposit.Id()))
+
+	assert.Nil(t, gs.DispatchDrones(faction.Id(), terr.Id(), []entity.EntityId{miner.Id()}, entity.DroneMining))
+
+	assert.Nil(t, gs.ResolveMining())
+	assert.Equal(t, 3, deposit.Remaining)
+	assert.Equal(t, gamestate.MiningRatePerDrone, faction.OwnedResources[entity.ResourceMineral])
+
+	// second tick should clamp extraction to whatever remains, not go negative
+	assert.Nil(t, gs.ResolveMining())
+	assert.Equal(t, 0, deposit.Remaining)
+	assert.Equal(t, total, faction.OwnedResources[entity.ResourceMineral])
 }
