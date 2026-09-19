@@ -90,8 +90,8 @@ func TestFaction_AddDrone(t *testing.T) {
 		Drone    *entity.Drone
 		register bool
 	}{
-		{"faction_a", entity.NewDrone("drone_a", entity.DroneMiner, 100), true},
-		{"faction_a", entity.NewDrone("drone_b", entity.DroneMiner, 100), false},
+		{"faction_a", entity.NewDrone("drone_a", entity.DroneMiner, 1), true},
+		{"faction_a", entity.NewDrone("drone_b", entity.DroneMiner, 1), false},
 	}
 
 	for _, tt := range tests {
