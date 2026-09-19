@@ -1,8 +1,8 @@
-import { keepPreviousData, useQuery } from "@tanstack/react-query"
-import { GetFactions, GetTerritories } from "../../wailsjs/go/main/App"
+import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query"
+import { GetDrones, GetFactions, GetTerritories } from "../../wailsjs/go/main/App"
 
-// Shared query keys so TerritoryTable and FactionTable dedupe their
-// network calls through react-query's cache instead of double-fetching.
+// Shared query keys so TerritoryTable, FactionTable, and DroneTable dedupe
+// their network calls through react-query's cache instead of double-fetching.
 //
 // `tick` changes on every refresh, which makes each refresh a "new" query
 // key. Without placeholderData, react-query would report `data: undefined`
@@ -26,4 +26,24 @@ export function useTerritoriesQuery(tick: number, scenario: string) {
         enabled: !!scenario,
         placeholderData: keepPreviousData,
     })
+}
+
+export function useDronesQuery(tick: number, scenario: string) {
+    return useQuery({
+        queryKey: ["drones", scenario, tick],
+        queryFn: GetDrones,
+        enabled: !!scenario,
+        placeholderData: keepPreviousData,
+    })
+}
+
+// Dispatch/recall mutate backend state instantly (no travel time), so the
+// UI needs to refetch drones/territories right away rather than waiting
+// for the next tick's query key to change.
+export function useInvalidateGameData(scenario: string) {
+    const queryClient = useQueryClient()
+    return () => {
+        queryClient.invalidateQueries({ queryKey: ["drones", scenario] })
+        queryClient.invalidateQueries({ queryKey: ["territories", scenario] })
+    }
 }

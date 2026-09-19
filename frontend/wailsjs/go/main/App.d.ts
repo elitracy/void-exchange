@@ -5,9 +5,13 @@ import {api} from '../models';
 
 export function CurrentTick():Promise<number>;
 
+export function DispatchDrones(arg1:entity.EntityId,arg2:entity.EntityId,arg3:Array<entity.EntityId>,arg4:entity.DroneActivity):Promise<void>;
+
 export function GetDeposit(arg1:entity.EntityId):Promise<api.DepositView>;
 
 export function GetDeposits(arg1:entity.EntityId):Promise<Array<api.DepositView>>;
+
+export function GetDrones():Promise<Array<api.DroneView>>;
 
 export function GetFactions():Promise<Array<api.FactionView>>;
 
@@ -24,6 +28,8 @@ export function ListScenarios():Promise<Array<string>>;
 export function LoadScenario(arg1:string,arg2:number):Promise<void>;
 
 export function Pause():Promise<void>;
+
+export function RecallDrones(arg1:entity.EntityId,arg2:Array<entity.EntityId>):Promise<void>;
 
 export function Resume():Promise<void>;
 
