@@ -1,10 +1,18 @@
 {
     "factions": [
         {
-            "name": "faction_a"
+            "name": "faction_a",
+            "startingResources": {
+                "resource_mineral": 50,
+                "resource_energy": 20
+            }
         },
         {
-            "name": "faction_b"
+            "name": "faction_b",
+            "startingResources": {
+                "resource_mineral": 50,
+                "resource_energy": 20
+            }
         }
     ],
     "territories": [
