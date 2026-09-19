@@ -189,3 +189,53 @@ func (a *App) GetFactions() ([]*api.FactionView, error) {
 
 	return fViews, nil
 }
+
+func (a *App) GetDrones() ([]*api.DroneView, error) {
+	if a.gs == nil || a.runner == nil {
+		return nil, fmt.Errorf("no scenario loaded")
+	}
+
+	dViews := []*api.DroneView{}
+	for _, factionId := range a.gs.Factions {
+		faction, err := a.gs.Faction(factionId)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, droneId := range faction.Fleet {
+			d, err := a.gs.Drone(droneId)
+			if err != nil {
+				return nil, fmt.Errorf("invalid drone (%d): %w", droneId, err)
+			}
+
+			view, err := api.NewDroneView(factionId, d)
+			if err != nil {
+				return nil, fmt.Errorf("couldn't create drone view (%d): %w", d.Id(), err)
+			}
+
+			dViews = append(dViews, view)
+		}
+	}
+
+	return dViews, nil
+}
+
+// DispatchDrones commits a faction's idle drones to a territory. activity
+// must be "drone_fighting" (contest/reinforce) or "drone_mining" (requires
+// the faction already own the territory).
+func (a *App) DispatchDrones(factionId entity.EntityId, territoryId entity.EntityId, droneIds []entity.EntityId, activity entity.DroneActivity) error {
+	if a.gs == nil || a.runner == nil {
+		return fmt.Errorf("no scenario loaded")
+	}
+
+	return a.gs.DispatchDrones(factionId, territoryId, droneIds, activity)
+}
+
+// RecallDrones instantly returns committed drones to idle.
+func (a *App) RecallDrones(factionId entity.EntityId, droneIds []entity.EntityId) error {
+	if a.gs == nil || a.runner == nil {
+		return fmt.Errorf("no scenario loaded")
+	}
+
+	return a.gs.RecallDrones(factionId, droneIds)
+}

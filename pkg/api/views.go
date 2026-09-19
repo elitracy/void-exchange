@@ -31,6 +31,18 @@ type FactionView struct {
 	Resources   map[entity.ResourceType]int `json:"resources"`
 }
 
+type DroneView struct {
+	ID        entity.EntityId      `json:"id"`
+	FactionID entity.EntityId      `json:"faction_id"`
+	Name      string               `json:"name"`
+	Type      entity.DroneType     `json:"type"`
+	Level     int                  `json:"level"`
+	HP        int                  `json:"hp"`
+	Attack    int                  `json:"attack"`
+	Activity  entity.DroneActivity `json:"activity"`
+	Target    entity.EntityId      `json:"target"`
+}
+
 func NewTerritoryView(em *entity.EntityManager, t *entity.Territory) (*TerritoryView, error) {
 
 	errs := []error{}
@@ -82,4 +94,18 @@ func NewFactionView(f *entity.Faction) (*FactionView, error) {
 		Resources:   f.OwnedResources,
 	}, nil
 
+}
+
+func NewDroneView(factionId entity.EntityId, d *entity.Drone) (*DroneView, error) {
+	return &DroneView{
+		ID:        d.Id(),
+		FactionID: factionId,
+		Name:      d.Name,
+		Type:      d.Type,
+		Level:     d.Level,
+		HP:        d.HP,
+		Attack:    d.Attack,
+		Activity:  d.Activity,
+		Target:    d.Target,
+	}, nil
 }
