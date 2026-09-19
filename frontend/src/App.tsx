@@ -10,12 +10,6 @@ import { formatMissionClock } from './lib/time';
 
 const SIM_TICK_MS = 100
 const UI_REFRESH_MS = 1000
-// The backend now pushes a "tick" event on every simulation tick instead of
-// the UI polling CurrentTick() on its own timer, so the displayed tick can
-// no longer drift or skip. Querying territories/factions on every single
-// simulation tick would be excessive, so those refresh once every N ticks —
-// still driven off the real tick count rather than a separate wall-clock
-// timer, so the refresh cadence can't drift out of sync either.
 const TICKS_PER_REFRESH = Math.max(1, Math.round(UI_REFRESH_MS / SIM_TICK_MS))
 
 type View = "territories" | "factions" | "drones"
@@ -25,13 +19,8 @@ function App() {
     const [currentScenario, setCurrentScenario] = useState<string>()
     const [tick, setTick] = useState(0)
     const [running, setRunning] = useState(false)
-    // Tracks whether a run has been started at all, separate from `running`.
-    // `running` flips false on pause too, so gating the Resume button on
-    // `running` alone made it disable itself the moment you paused. `started`
-    // is what actually distinguishes "never started" (idle) from "paused".
     const [started, setStarted] = useState(false)
     const [view, setView] = useState<View>("territories")
-    // Stand-in for a future dev tools panel: toggled with the backtick key.
     const [showTickDebug, setShowTickDebug] = useState(false)
 
     const queryTick = Math.floor(tick / TICKS_PER_REFRESH)
