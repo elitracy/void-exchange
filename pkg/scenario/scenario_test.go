@@ -52,8 +52,8 @@ func TestLoad_JSON(t *testing.T) {
 func TestBuild(t *testing.T) {
 	cfg := scenario.Config{
 		Factions: []scenario.FactionConfig{
-			{"test_faction_a"},
-			{"test_faction_b"},
+			{Name: "test_faction_a", StartingResources: map[entity.ResourceType]int{entity.ResourceMineral: 25}},
+			{Name: "test_faction_b"},
 		},
 		Territories: []scenario.TerritoryConfig{
 			{
@@ -80,6 +80,7 @@ func TestBuild(t *testing.T) {
 	faction_a, err := gs.Faction(gs.Factions[0])
 	assert.Nil(t, err)
 	assert.Equal(t, "test_faction_a", faction_a.Name)
+	assert.Equal(t, 25, faction_a.OwnedResources[entity.ResourceMineral])
 
 	faction_b, err := gs.Faction(gs.Factions[1])
 	assert.Nil(t, err)
