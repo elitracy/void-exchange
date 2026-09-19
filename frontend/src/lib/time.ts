@@ -1,6 +1,3 @@
-// Each simulation tick represents one second of in-universe Mission Elapsed
-// Time (MET) — a NASA-style "time since operation start" clock, which reads
-// naturally for a space war sim regardless of how fast ticks actually run.
 const MET_SECONDS_PER_TICK = 1
 
 function pad(n: number): string {
