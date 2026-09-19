@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/elitracy/space-war-sim/pkg/api"
+	"github.com/elitracy/void-exchange/pkg/api"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/elitracy/space-war-sim/pkg/api"
-	"github.com/elitracy/space-war-sim/pkg/entity"
-	"github.com/elitracy/space-war-sim/pkg/gamestate"
-	"github.com/elitracy/space-war-sim/pkg/logging"
+	"github.com/elitracy/void-exchange/pkg/api"
+	"github.com/elitracy/void-exchange/pkg/entity"
+	"github.com/elitracy/void-exchange/pkg/gamestate"
+	"github.com/elitracy/void-exchange/pkg/logging"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
