@@ -17,11 +17,13 @@ type App struct {
 	ctx    context.Context
 	gs     *gamestate.GameState
 	runner *api.Runner
+
+	emitEvent func(ctx context.Context, eventName string, optionalData ...interface{})
 }
 
 // NewApp creates a new App application struct
 func NewApp() *App {
-	return &App{}
+	return &App{emitEvent: runtime.EventsEmit}
 }
 
 // startup is called when the app starts. The context is saved
@@ -65,16 +67,36 @@ func (a *App) StartRun(tickMs int) error {
 	}
 
 	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				logging.Error("panic emitting run:finished event: %v", r)
+			}
+		}()
 		err := <-done
-		runtime.EventsEmit(a.ctx, "run:finished", fmt.Sprint(err))
+		a.emitEvent(a.ctx, "run:finished", fmt.Sprint(err))
 	}()
 
 	return err
 }
 
-func (a *App) Pause()  { a.runner.Pause() }
-func (a *App) Resume() { a.runner.Resume() }
-func (a *App) Stop()   { a.runner.Stop() }
+func (a *App) Pause() {
+	if a.runner == nil {
+		return
+	}
+	a.runner.Pause()
+}
+func (a *App) Resume() {
+	if a.runner == nil {
+		return
+	}
+	a.runner.Resume()
+}
+func (a *App) Stop() {
+	if a.runner == nil {
+		return
+	}
+	a.runner.Stop()
+}
 func (a *App) CurrentTick() int {
 	if a.gs == nil {
 		return -1
@@ -82,7 +104,12 @@ func (a *App) CurrentTick() int {
 
 	return a.gs.CurrentTick()
 }
-func (a *App) IsPaused() bool { return a.gs.IsPaused() }
+func (a *App) IsPaused() bool {
+	if a.gs == nil {
+		return false
+	}
+	return a.gs.IsPaused()
+}
 
 func (a *App) GetTerritories() ([]*api.TerritoryView, error) {
 	if a.gs == nil || a.runner == nil {

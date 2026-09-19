@@ -49,8 +49,6 @@ func (r *Runner) Start(appCtx context.Context, tickInterval time.Duration, onTic
 		done <- err
 	}()
 
-	logging.Info("Started run")
-
 	return done, nil
 }
 

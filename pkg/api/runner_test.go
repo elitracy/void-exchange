@@ -56,3 +56,14 @@ func TestPauseResume(t *testing.T) {
 	err = <-done
 	assert.ErrorIs(t, context.Canceled, err)
 }
+
+func TestRunner_PauseResume_DelegateToGameState(t *testing.T) {
+	gs := newMockGameState()
+	runner := api.NewRunner(gs, filepath.Join(t.TempDir(), "test.log"))
+
+	runner.Pause()
+	assert.True(t, gs.IsPaused())
+
+	runner.Resume()
+	assert.False(t, gs.IsPaused())
+}
