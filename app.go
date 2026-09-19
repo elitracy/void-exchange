@@ -56,7 +56,9 @@ func (a *App) StartRun(tickMs int) error {
 		return fmt.Errorf("no scenario loaded")
 	}
 
-	done, err := a.runner.Start(a.ctx, time.Duration(tickMs)*time.Millisecond)
+	done, err := a.runner.Start(a.ctx, time.Duration(tickMs)*time.Millisecond, func(tick int) {
+		runtime.EventsEmit(a.ctx, "tick", tick)
+	})
 
 	if err != nil {
 		return err
