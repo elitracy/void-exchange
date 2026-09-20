@@ -31,6 +31,8 @@ type LogMessage struct {
 }
 
 type logger struct {
+	sendMu   sync.Mutex
+	closed   bool
 	queue    chan LogMessage
 	filepath string
 	tick     int
@@ -68,15 +70,28 @@ func Init(filepath string, tick int) {
 
 	l.wg.Add(1)
 	go l.run()
+
+	globalMu.Lock()
 	_logger = l
+	globalMu.Unlock()
 }
 
 func Flush() {
-	if _logger == nil {
+	globalMu.Lock()
+	l := _logger
+	_logger = nil
+	globalMu.Unlock()
+
+	if l == nil {
 		return
 	}
-	close(_logger.queue)
-	_logger.wg.Wait()
+
+	l.sendMu.Lock()
+	l.closed = true
+	close(l.queue)
+	l.sendMu.Unlock()
+
+	l.wg.Wait()
 }
 
 func (l *logger) log(level, color, format string, args ...any) {
@@ -96,6 +111,12 @@ func (l *logger) log(level, color, format string, args ...any) {
 		msg = format
 	}
 
+	l.sendMu.Lock()
+	defer l.sendMu.Unlock()
+	if l.closed {
+		return
+	}
+
 	l.queue <- LogMessage{
 		Time:     time.Now(),
 		Tick:     l.tick,
@@ -106,10 +127,19 @@ func (l *logger) log(level, color, format string, args ...any) {
 	}
 }
 
-var _logger *logger
+var (
+	globalMu sync.Mutex
+	_logger  *logger
+)
 
-func Info(format string, args ...any)  { _logger.log("TELEMETRY", colorGrey, format, args...) }
-func Debug(format string, args ...any) { _logger.log("TELEMETRY", colorReset, format, args...) }
-func Error(format string, args ...any) { _logger.log("FAULT", colorRed, format, args...) }
-func Warn(format string, args ...any)  { _logger.log("WARN", colorYellow, format, args...) }
-func Ok(format string, args ...any)    { _logger.log("STABLE", colorGreen, format, args...) }
+func current() *logger {
+	globalMu.Lock()
+	defer globalMu.Unlock()
+	return _logger
+}
+
+func Info(format string, args ...any)  { current().log("TELEMETRY", colorGrey, format, args...) }
+func Debug(format string, args ...any) { current().log("TELEMETRY", colorReset, format, args...) }
+func Error(format string, args ...any) { current().log("FAULT", colorRed, format, args...) }
+func Warn(format string, args ...any)  { current().log("WARN", colorYellow, format, args...) }
+func Ok(format string, args ...any)    { current().log("STABLE", colorGreen, format, args...) }

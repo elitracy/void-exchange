@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sync"
+	"sync/atomic"
 
 	"github.com/elitracy/void-exchange/pkg/entity"
 )
@@ -15,7 +16,7 @@ type GameState struct {
 	EM          *entity.EntityManager
 	Territories []entity.EntityId
 	Factions    []entity.EntityId
-	currentTick int
+	currentTick atomic.Int64
 	Rng         *rand.Rand
 
 	paused   bool
@@ -92,14 +93,14 @@ func PopulateTerritory(
 }
 
 func (gs *GameState) Tick() error {
-	gs.currentTick += 1
+	gs.currentTick.Add(1)
 	err := gs.EM.Tick()
 	conflictErr := gs.ResolveTerritoryConflicts()
 	miningErr := gs.ResolveMining()
 	return errors.Join(err, conflictErr, miningErr)
 }
 
-func (gs *GameState) CurrentTick() int { return gs.currentTick }
+func (gs *GameState) CurrentTick() int { return int(gs.currentTick.Load()) }
 func (gs *GameState) SetSeed(seed int) { gs.Rng = rand.New(rand.NewSource(int64(seed))) }
 
 func (gs *GameState) DispatchDrones(factionId, territoryId entity.EntityId, droneIds []entity.EntityId, activity entity.DroneActivity) error {

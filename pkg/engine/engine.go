@@ -16,6 +16,8 @@ type GameState interface {
 func RunGame(ctx context.Context, tickInterval time.Duration, logPath string, gs GameState, onTick func(tick int)) error {
 
 	logging.Init(logPath, gs.CurrentTick())
+	defer logging.Flush()
+	logging.Info("Started run")
 
 	for {
 		select {
