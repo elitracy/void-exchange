@@ -22,9 +22,10 @@ jobs:
           go-version-file: go.mod
           cache: false # golangci-lint-action manages its own cache
 
-      - uses: golangci/golangci-lint-action@v6
+      - uses: golangci/golangci-lint-action@v9
         with:
-          # "latest" resolves to the newest v1.x release, which predates
+          # v6 of this action doesn't support golangci-lint v2 at all.
+          # "latest" also resolves to the newest v1.x release, which predates
           # go1.26 support (added in v2.9.0). Pin to v2 explicitly to match
           # .golangci.yml's v2 config schema and get a go1.26-compatible binary.
           version: v2.13.2

@@ -59,7 +59,7 @@ func (a *App) StartRun(tickMs int) error {
 	}
 
 	done, err := a.runner.Start(a.ctx, time.Duration(tickMs)*time.Millisecond, func(tick int) {
-		runtime.EventsEmit(a.ctx, "tick", tick)
+		a.emitEvent(a.ctx, "tick", tick)
 	})
 
 	if err != nil {
