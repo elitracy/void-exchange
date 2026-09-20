@@ -3,7 +3,7 @@ module github.com/elitracy/void-exchange
 go 1.26.4
 
 require (
-	github.com/wailsapp/wails/v2 v2.15.0
+	github.com/wailsapp/wails/v2 v2.16.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 )
 
